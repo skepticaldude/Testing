@@ -1,0 +1,13 @@
+body {
+    background-color: #DECBA4; /* Sandalwood color */
+}
+
+#container1 button:first-child {
+    background-color: green;
+    color: white;
+}
+
+#container1 button:last-child {
+    background-color: red;
+    color: white;
+}
