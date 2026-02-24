@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live QR Code Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 50px;
+    }
+    input {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Live QR Code Generator</h2>
+
+<input type="text" id="linkInput" placeholder="Enter your link here" />
+
+<br><br>
+
+<canvas id="qrcode"></canvas>
+
+<script>
+  const input = document.getElementById("linkInput");
+  const canvas = document.getElementById("qrcode");
+
+  function generateQR(text) {
+    QRCode.toCanvas(canvas, text, function (error) {
+      if (error) console.error(error);
+    });
+  }
+
+  input.addEventListener("input", function () {
+    if (input.value.trim() !== "") {
+      generateQR(input.value);
+    }
+  });
+</script>
+
+</body>
+</html>
