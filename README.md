@@ -1,1 +1,1 @@
-this is my QR code app
+this is my Live QR Code Generator
