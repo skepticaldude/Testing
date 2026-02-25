@@ -1,50 +1,383 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
-  <title>Live QR Code Generator</title>
+  <title>QR Code Generator</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
+    :root {
+      --bg:        #f5f0eb;
+      --surface:   #ede6dd;
+      --border:    #c9b99a;
+      --navy:      #1a2744;
+      --text:      #1a2744;
+      --subtext:   #5a6a8a;
+      --input-bg:  #ffffff;
+      --btn-bg:    #1a2744;
+      --btn-text:  #f5f0eb;
+      --btn-hover: #2c3e6b;
+      --accent:    #8c6a3f;
+      --shadow:    rgba(26,39,68,0.10);
+      --toggle-bg: #c9b99a;
+    }
+
+    [data-theme="dark"] {
+      --bg:        #111827;
+      --surface:   #1e2a3a;
+      --border:    #2e3f55;
+      --text:      #e8ddd0;
+      --subtext:   #8899bb;
+      --input-bg:  #162030;
+      --btn-bg:    #8c6a3f;
+      --btn-text:  #f5f0eb;
+      --btn-hover: #a07848;
+      --accent:    #c9a87a;
+      --shadow:    rgba(0,0,0,0.35);
+      --toggle-bg: #2e3f55;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: Arial;
-      text-align: center;
-      margin-top: 50px;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Georgia, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 16px;
+      transition: background-color 0.3s, color 0.3s;
     }
-    input {
-      width: 300px;
-      padding: 10px;
-      font-size: 16px;
+
+    /* ── Dark mode toggle ── */
+    .toggle-wrap {
+      position: fixed;
+      top: 18px;
+      right: 20px;
     }
+
+    .toggle-btn {
+      background: var(--toggle-bg);
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.3s;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px var(--shadow);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--subtext);
+      margin-bottom: 28px;
+    }
+
+    /* ── Inputs ── */
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 15px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--subtext);
+      opacity: 0.6;
+    }
+
+    /* ── Optional toggle ── */
+    .optional-toggle {
+      font-size: 12px;
+      color: var(--accent);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      margin-bottom: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .second-field {
+      display: none;
+      margin-bottom: 14px;
+    }
+
+    .second-field.visible {
+      display: block;
+    }
+
+    /* ── QR Display ── */
+    .qr-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      gap: 16px;
+    }
+
+    .qr-wrap.visible {
+      display: flex;
+    }
+
     canvas {
-      margin-top: 20px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn:hover {
+      background: var(--btn-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-download {
+      background: transparent;
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-download:hover {
+      background: var(--accent);
+      color: var(--btn-text);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--subtext);
+      margin-top: -10px;
+      margin-bottom: 6px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: var(--subtext);
+      letter-spacing: 0.4px;
+    }
+
+    .footer-text span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .icon-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    }
+
+    .icon-btn:hover {
+      background: var(--btn-bg);
+      border-color: var(--btn-bg);
+    }
+
+    .icon-btn:hover svg {
+      fill: var(--btn-text);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.93);
+    }
+
+    .icon-btn svg {
+      fill: var(--subtext);
+      transition: fill 0.2s;
+      width: 18px;
+      height: 18px;
     }
   </style>
 </head>
 <body>
 
-<h2>Live QR Code Generator</h2>
+  <!-- Dark/Light toggle -->
+  <div class="toggle-wrap">
+    <button class="toggle-btn" onclick="toggleTheme()">
+      <span id="toggle-icon">🌙</span>
+      <span id="toggle-label">Dark</span>
+    </button>
+  </div>
 
-<input type="text" id="linkInput" placeholder="Enter your link here" />
+  <div class="card">
+    <h1>QR Code Generator</h1>
+    <p class="subtitle">Paste a link to instantly generate a QR code</p>
 
-<br><br>
+    <!-- Primary link -->
+    <div class="field">
+      <label>Primary Link</label>
+      <input type="text" id="link1" placeholder="https://example.com" />
+    </div>
 
-<canvas id="qrcode"></canvas>
+    <!-- Optional second link toggle -->
+    <button class="optional-toggle" onclick="toggleSecond()">
+      <span id="plus-icon">＋</span> Add a second link (optional)
+    </button>
 
-<script>
-  const input = document.getElementById("linkInput");
-  const canvas = document.getElementById("qrcode");
+    <!-- Second link (hidden by default) -->
+    <div class="second-field" id="secondField">
+      <label>Second Link <span style="font-weight:400; text-transform:none; font-size:11px;">(will be combined)</span></label>
+      <input type="text" id="link2" placeholder="https://another-link.com" />
+      <p class="hint">Both links will be joined with a space in the QR code.</p>
+    </div>
 
-  function generateQR(text) {
-    QRCode.toCanvas(canvas, text, function (error) {
-      if (error) console.error(error);
-    });
-  }
+    <!-- Generate button -->
+    <button class="btn" onclick="generateQR()">Generate QR Code</button>
 
-  input.addEventListener("input", function () {
-    if (input.value.trim() !== "") {
-      generateQR(input.value);
+    <!-- QR Output -->
+    <div class="qr-wrap" id="qrWrap">
+      <canvas id="qrcode"></canvas>
+      <button class="btn btn-download" onclick="downloadQR()">⬇ Download QR Code</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Theme toggle ──
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('toggle-icon').textContent = isDark ? '🌙' : '☀️';
+      document.getElementById('toggle-label').textContent = isDark ? 'Dark' : 'Light';
     }
-  });
-</script>
+
+    // ── Optional second link ──
+    let secondVisible = false;
+    function toggleSecond() {
+      secondVisible = !secondVisible;
+      document.getElementById('secondField').classList.toggle('visible', secondVisible);
+      document.getElementById('plus-icon').textContent = secondVisible ? '－' : '＋';
+    }
+
+    // ── Generate QR ──
+    function generateQR() {
+      const val1 = document.getElementById('link1').value.trim();
+      const val2 = document.getElementById('link2').value.trim();
+
+      if (!val1) {
+        alert('Please enter at least a primary link.');
+        return;
+      }
+
+      const combined = val2 ? val1 + ' ' + val2 : val1;
+      const canvas   = document.getElementById('qrcode');
+      const qrWrap   = document.getElementById('qrWrap');
+
+      QRCode.toCanvas(canvas, combined, { width: 220, margin: 2 }, function(error) {
+        if (error) {
+          console.error(error);
+        } else {
+          qrWrap.classList.add('visible');
+        }
+      });
+    }
+
+    // ── Download QR ──
+    function downloadQR() {
+      const canvas = document.getElementById('qrcode');
+      const link   = document.createElement('a');
+      link.download = 'qrcode.png';
+      link.href     = canvas.toDataURL();
+      link.click();
+    }
+
+    // ── Allow Enter key to generate ──
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') generateQR();
+    });
+  </script>
 
 </body>
 </html>
